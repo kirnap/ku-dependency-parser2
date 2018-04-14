@@ -61,3 +61,22 @@ function cachelmvec!(corpus)
         end
     end
 end
+
+
+
+function minibatch(corpus, batchsize; maxlen=typemax(Int), minlen=1, shuf=false)
+    data = Any[]
+    sorted = sort(corpus, by=length)
+    i1 = findfirst(x->(length(x) >= minlen), sorted)
+    if i1==0; error("No sentences >= $minlen"); end
+    i2 = findlast(x->(length(x) <= maxlen), sorted)
+    if i2==0; error("No sentences <= $maxlen"); end
+    for i in i1:batchsize:i2
+        j = min(i2, i+batchsize-1)
+        push!(data, sorted[i:j])
+    end
+    if shuf
+        data=shuffle(data)
+    end
+    return data
+end
