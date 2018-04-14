@@ -51,3 +51,13 @@ function create_vocab(d)
           get(d, "deprels", UDEPREL)
           )
 end
+
+
+# After filling word, forward and backward vectors cache the concated version
+function cachelmvec!(corpus)
+    for sent in corpus
+        for i in 1:length(sent)
+            push!(sent.cavec, vcat(sent.wvec[i], sent.fvec[i], sent.bvec[i]))
+        end
+    end
+end
