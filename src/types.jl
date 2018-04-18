@@ -103,10 +103,11 @@ type Sentence                   # 1. ID: Word index, integer starting at 1 for e
     wvec::Vector                # word vectors
     fvec::Vector                # forw context vectors
     bvec::Vector                # backw context vectors
+    cavec::Vector               # to cache forw, backw, and word vectors
     vocab::Vocab                # go to 13
     parse
 
-    Sentence(v::Vocab) = new([],[], [], [], [], [], [], v, nothing)
+    Sentence(v::Vocab) = new([],[], [], [], [], [], [], [], v, nothing)
 end
 
 
