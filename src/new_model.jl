@@ -151,3 +151,60 @@ end
 
 
 oraclegrad = grad(oracleloss)
+
+
+# Implement test related
+
+# endofparse to use in test
+endofparse(p)=(p.sptr == 1 && p.wptr > p.nword)
+
+
+# TODO: You need to modify score calculations
+function oracletest(pmodel, corpus, arctype, feats, batchsize; pdrop=(0.0, 0.0))
+    sentbatches = minibatch(corpus, batchsize)
+    featmodel,mlpmodel = splitmodel(pmodel)
+
+    for sentences in sentbatches
+        parsers = map(arctype, sentences)
+        mcosts = Array{Cost}(parsers[1].nmove) #Array(Cost, parsers[1].nmove)
+        parserdone = falses(length(parsers))
+        while !all(parserdone)
+            fmatrix = features(parsers, feats, featmodel)
+            if gpu()>=0
+                fmatrix = KnetArray(fmatrix)
+            end
+            scores = mlp(mlpmodel, fmatrix; pdrop=pdrop)
+            logprob = Array(logp(scores, 1))
+            for (i,p) in enumerate(parsers)
+                if parserdone[i]
+                    continue
+                end
+
+                isorted = sortperm(logprob[:, i], rev=true) # ith column for ith instance
+                for m in isorted # take the best&valid action
+                    if moveok(p, m)
+                        move!(p, m)
+                        break
+                    end
+                end
+                if endofparse(p)
+                    parserdone[i] = true
+                    p.sentence.parse = p
+                end
+            end
+        end
+    end
+    return las(corpus)
+end
+
+
+# labeled-attachment score calculator
+function las(corpus)
+    nword = ncorr = 0
+    for s in corpus
+        p = s.parse
+        nword += length(s)
+        ncorr += sum((s.head .== p.head) .& (s.deprel .== p.deprel))
+    end
+    ncorr / nword
+end
