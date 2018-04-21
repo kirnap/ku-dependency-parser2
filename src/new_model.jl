@@ -117,7 +117,6 @@ function oracleloss(allmodel, sentences, arctype, feats; losses=nothing, pdrop=(
         end
         ybufs = scan_bufbatch(bufmodel, featmodel, parsers)
         input = vcat(fmatrix, ybufs)
-        global omer = (mlpmodel, input, pdrop)
         scores = mlp(mlpmodel, input, pdrop=pdrop)
         logprobs = logp(scores, 1)
         for (i, p) in enumerate(parsers)
@@ -134,7 +133,7 @@ function oracleloss(allmodel, sentences, arctype, feats; losses=nothing, pdrop=(
                 totalloss -= logprobs[goldmove, i]
                 move!(p, goldmove)
                 if losses != nothing
-                    loss1 = -getval(logprob)[goldmove,i]
+                    loss1 = -getval(logprobs)[goldmove,i]
                     losses[1] += loss1
                     losses[2] += 1
                     if losses[2] < 1000
@@ -162,8 +161,8 @@ endofparse(p)=(p.sptr == 1 && p.wptr > p.nword)
 # TODO: You need to modify score calculations
 function oracletest(pmodel, corpus, arctype, feats, batchsize; pdrop=(0.0, 0.0))
     sentbatches = minibatch(corpus, batchsize)
-    featmodel,mlpmodel = splitmodel(pmodel)
-
+    featmodel, bufmodel, mlpmodel = splitmodel(pmodel)
+    
     for sentences in sentbatches
         parsers = map(arctype, sentences)
         mcosts = Array{Cost}(parsers[1].nmove) #Array(Cost, parsers[1].nmove)
@@ -173,8 +172,11 @@ function oracletest(pmodel, corpus, arctype, feats, batchsize; pdrop=(0.0, 0.0))
             if gpu()>=0
                 fmatrix = KnetArray(fmatrix)
             end
-            scores = mlp(mlpmodel, fmatrix; pdrop=pdrop)
+            ybufs = scan_bufbatch(bufmodel, featmodel, parsers)
+            input = vcat(fmatrix, ybufs)
+            scores = mlp(mlpmodel, input, pdrop=pdrop)
             logprob = Array(logp(scores, 1))
+
             for (i,p) in enumerate(parsers)
                 if parserdone[i]
                     continue
@@ -208,3 +210,11 @@ function las(corpus)
     end
     ncorr / nword
 end
+
+
+function empty_parses!(corpus)
+    for s in corpus
+        s.parse = nothing
+    end
+end
+
