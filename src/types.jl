@@ -113,6 +113,8 @@ end
 
 Base.length(s::Sentence) = length(s.word)
 
+Base.show(io::IO, s::Sentence) = for w in s.word; print(io, "$w ");end;
+
 # add-hoc solution for parser.jl not sure whether it is need?
 const Corpus = AbstractVector{Sentence}
 
