@@ -23,7 +23,9 @@ function main()
     info("Model initialization...")
     model, optims = initmodel1(odict, corpus[1])
     # hyper - parameters
-    pdrop = (0.5, 0.6); batchsize = 8;
+    pdrop = (0.4, 0.5); batchsize = 8; odict[:pdrop] = pdrop;
+
+    println("opts=",[(k,v) for (k,v) in odict]...)
 
     info("calculating initial accuracies")
     acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
@@ -33,7 +35,7 @@ function main()
     sentbatches = minibatch(corpus, batchsize, maxlen=64, minlen=2, shuf=false) # shuffling imp. acc
     nsent = sum(map(length,sentbatches)); nsent0 = length(corpus)
     nword = sum(map(length,vcat(sentbatches...))); nword0 = sum(map(length,corpus))
-    for epoch=1:20
+    for epoch=1:100
         @msg("nsent=$nsent/$nsent0 nword=$nword/$nword0")
         nwords = StopWatch()
         losses = Any[0,0,0]
@@ -50,7 +52,7 @@ function main()
         acc1 = oracletest(model, corpus, odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
         acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], batchsize; pdrop=(0.0, 0.0))
         println()
-        println("epoch $epoch train acc $acc1 dev acc $acc2");flush(STDOUT);
+        @msg("epoch $epoch train acc $acc1 dev acc $acc2")
     end
 end
 !isinteractive() && main()
