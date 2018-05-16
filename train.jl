@@ -1,11 +1,9 @@
-using JLD, Knet, ArgParse
+using JLD, Knet, ArgParse, TimerOutputs
 include("src/header.jl")
 
-const language_model = "/ai/data/nlp/conll17/competition/chmodel_converted/english_chmodel.jld"
-
-const small_data_file = "/ai/data/nlp/conll17/ud-treebanks-v2.0/UD_English-LinES/en_lines-ud-train.conllu"
-const small_dev_file = "/ai/data/nlp/conll17/ud-treebanks-v2.0/UD_English-LinES/en_lines-ud-dev.conllu"
-
+const language_model  = "/scratch/users/okirnap/ud-treebanks-v2.2/chmodel_converted/english_chmodel.jld" 
+const small_data_file = "/scratch/users/okirnap/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-train.conllu"
+const small_dev_file  = "/scratch/users/okirnap/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-dev.conllu"
 const odict = Dict{Symbol, Any}();
 odict[:embed] = (128, 32, 16); odict[:optimization] = Adam; odict[:hidden] = [2048]; odict[:arctype] = ArcHybridR1;
 odict[:stembed]=odict[:bufembed]=128+950; odict[:sthidden]=odict[:bufhidden]=odict[:acthidden]=128; odict[:actembed]=32; odict[:posembed]=128;
@@ -20,20 +18,27 @@ function main()
     info("Caching lm vectors...")
     map(cachelmvec!,corpora)
 
+
+    #const to = TimerOutput()
+
     info("Model initialization...")
     model, optims = initmodel1(odict, corpus[1])
+
     # hyper - parameters
-    pdrop = (0.5, 0.6); batchsize = 8;
+    pdrop = (0.4, 0.5); batchsize = 8; odict[:pdrop] = pdrop;
+
+    println("opts=",[(k,v) for (k,v) in odict]...)
 
     info("calculating initial accuracies")
     acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
     acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], batchsize; pdrop=(0.0, 0.0))
     @msg "Initial tracc $acc1 devacc $acc2"
 
-    sentbatches = minibatch(corpus, batchsize, maxlen=64, minlen=2, shuf=false) # shuffling imp. acc
+    sentbatches = minibatch(corpus, batchsize, maxlen=64, minlen=2, shuf=true)
     nsent = sum(map(length,sentbatches)); nsent0 = length(corpus)
     nword = sum(map(length,vcat(sentbatches...))); nword0 = sum(map(length,corpus))
-    for epoch=1:20
+    for epoch=1:100
+        shuffle!(sentbatches)
         @msg("nsent=$nsent/$nsent0 nword=$nword/$nword0")
         nwords = StopWatch()
         losses = Any[0,0,0]
@@ -46,11 +51,11 @@ function main()
                 gc();Knet.gc();gc();
             end
         end
-        empty_parses!(corpus)
+        empty_parses!(corpus); gc(); Knet.gc();gc();
         acc1 = oracletest(model, corpus, odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
         acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], batchsize; pdrop=(0.0, 0.0))
         println()
-        println("epoch $epoch train acc $acc1 dev acc $acc2");flush(STDOUT);
+        @msg("epoch $epoch train acc $acc1 dev acc $acc2")
     end
 end
 !isinteractive() && main()
