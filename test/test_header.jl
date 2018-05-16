@@ -35,12 +35,9 @@ FEATS2=[#"s1c","s1v","s1p","s1A","s1a","s1B","s1b",
 using JLD, Knet
 include("../src/header.jl")
 
-const language_model = "/ai/data/nlp/conll17/competition/chmodel_converted/english_chmodel.jld"
-const data_file = "/ai/data/nlp/conll17/ud-treebanks-v2.0/UD_English/en-ud-train.conllu"
-const dev_file = "/ai/data/nlp/conll17/ud-treebanks-v2.0/UD_English/en-ud-dev.conllu"
-
-const small_data_file = "/ai/data/nlp/conll17/ud-treebanks-v2.0/UD_English-LinES/en_lines-ud-train.conllu"
-const small_dev_file = "/ai/data/nlp/conll17/ud-treebanks-v2.0/UD_English-LinES/en_lines-ud-dev.conllu"
+const language_model  = "/scratch/users/okirnap/ud-treebanks-v2.2/chmodel_converted/english_chmodel.jld" 
+const small_data_file = "/scratch/users/okirnap/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-train.conllu"
+const small_dev_file  = "/scratch/users/okirnap/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-dev.conllu"
 
 const odict = Dict{Symbol, Any}();
 odict[:embed] = (128, 32, 16); odict[:optimization] = Adam; odict[:hidden] = [2048]; odict[:feats]=FEATS1; odict[:arctype] = ArcHybridR1;
