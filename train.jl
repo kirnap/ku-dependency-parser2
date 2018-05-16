@@ -48,7 +48,6 @@ function main()
             nw = sum(map(length,sentences))
             if (speed = inc(nwords, nw)) != nothing
                 date("$(nwords.ncurr) words $(round(Int,speed)) wps $(losses[3]) avgloss")
-                gc();Knet.gc();gc();
             end
         end
         empty_parses!(corpus); gc(); Knet.gc();gc();
