@@ -36,7 +36,6 @@ function initmodel1(o, s; ftype=Float32)
     push!(model, initx(o[:actembed], p.nmove)) # 5
 
     # decision module initialization # 6
-    # decision module changed from vcat to multiplication
     mlpdims = (r_s.hiddenSize + r_b.hiddenSize + r_a.hiddenSize, o[:hidden]..., p.nmove)
     info("mlpdims: $mlpdims")
     decider = Any[]
@@ -267,6 +266,12 @@ function oracletest(allmodel, corpus, arctype, hiddens, batchsize; pdrop=(0.0, 0
         inacts = map(t->1, 1:B)
         yact, hact, cact = scan_action(allmodel, inacts, nstate)
 
+        if all(parserdone) # shows how careless they prepared the dataset!
+            for p in parsers
+                p.sentence.parse = p
+            end
+        end
+
         while !all(parserdone)
             yact, hact, cact = scan_action(allmodel, inacts, nstate)
             nstate = (yact, hact, cact);
@@ -304,44 +309,6 @@ function oracletest(allmodel, corpus, arctype, hiddens, batchsize; pdrop=(0.0, 0
 end
 
 
-
-################## GARBAGE START ##################
-
-function scan_buffer1(model, parser, hidden)
-    bufmodel, pvecs = bufferm(model), postagv(model)
-    rbuf, wbuf = bufmodel[1], bufmodel[2]
-    sentence = parser.sentence
-    seqe = length(sentence)
-    seqs = parser.wptr
-    range_ = seqe:-1:seqs
-    instate = zeros(Float32, hidden, 1) 
-    ybuf = hout = cout = (gpu() >=0 ? KnetArray(instate) : Array(instate))
-    for i in range_
-        #word = sentence.word[i]; print(" $word"); # dbg line
-        x = (gpu() >=0 ? KnetArray(sentence.cavec[i]) : Array(sentence.cavec[i]))
-        input = cat1d(x, pvecs[sentence.postag[i]])
-        ybuf, hout, cout, _ = rnnforw(rbuf, wbuf, input, hout, cout, hy=true, cy=true)
-    end
-    return ybuf
-end
-
-
-function scan_bufbatch2(model, parsers, hidden)
-    # Todo: we may cache some parsers in future
-    yalls = Any[]
-    for p in parsers
-        ybuf = scan_buffer1(model, p, hidden)
-        push!(yalls, ybuf)
-    end
-    yalls = cat1d(yalls...)
-    ncols = length(parsers)
-    nrows = div(length(yalls), ncols)
-    return reshape(yalls, nrows, ncols)
-end
-
-
-
-
 # labeled-attachment score calculator
 function las(corpus)
     nword = ncorr = 0
@@ -359,126 +326,3 @@ function empty_parses!(corpus)
         s.parse = nothing
     end
 end
-
-
-################## GARBAGE START ##################
-
-# Remaining part is also about to die(old loss value)
-function oracleloss2(allmodel, sentences, arctype, hiddens; losses=nothing, pdrop=(0.0, 0.0))
-    hidstack, hidact, hidbuf = hiddens
-    parsers = map(arctype, sentences)
-    mcosts  = Array{Cost}(parsers[1].nmove)
-    parserdone = falses(length(parsers))
-    mlpmodel = parserv(allmodel)
-    B = length(parsers) # bathcsize
-    t0 = zeros(Float32, hidact, B, 1)
-    h0 = c0 = (gpu()>=0 ? KnetArray(t0) : Array(t0))
-    y0 = reshape(h0, hidact, B)
-    totalloss = 0.0
-
-    # action lstm-init
-    nstate = (y0, h0, c0);
-    inacts = map(t->1, 1:B)
-
-    while !all(parserdone)
-        # batched score 
-        yact, hact, cact = scan_action(allmodel, inacts, nstate)
-        nstate = (yact, hact, cact); 
-        ybufs    = scan_bufbatch2(allmodel, parsers, hidbuf)
-        ysts     = scan_stackbatch(allmodel, parsers, hidstack)
-        encoded  = vcat(yact, ybufs, ysts) 
-        scores   = mlp(mlpmodel, encoded, pdrop=pdrop)
-        logprobs = logp(scores, 1)
-
-
-        inacts = Int[] # to get the next step's actions
-        # iterative loss-val
-        for (i, p) in enumerate(parsers)
-            if parserdone[i]
-                push!(inacts, 1); # not changing batchsize
-                continue
-            end
-            movecosts(p, p.sentence.head, p.sentence.deprel, mcosts)
-            goldmove = indmin(mcosts)
-
-            if mcosts[goldmove] == typemax(Cost)
-                parserdone[i] = true
-                p.sentence.parse = p
-                push!(inacts, 1); # not changing batchsize
-            else
-                totalloss -= logprobs[goldmove, i]
-                move!(p, goldmove);
-                push!(inacts, goldmove);
-                if losses != nothing
-                    loss1 = -getval(logprobs)[goldmove,i]
-                    losses[1] += loss1
-                    losses[2] += 1
-                    if losses[2] < 1000
-                        losses[3] = losses[1]/losses[2]
-                    else
-                        losses[3] = 0.999 * losses[3] + 0.001 * loss1
-                    end                   
-                end
-            end
-        end
-    end
-    return totalloss / length(sentences)
-end
-
-oraclegrad2 = grad(oracleloss2)
-
-function oracletest2(allmodel, corpus, arctype, hiddens, batchsize; pdrop=(0.0, 0.0))
-    sentbatches = minibatch(corpus, batchsize)
-    hidstack, hidact, hidbuf = hiddens
-    mlpmodel = parserv(allmodel)
-
-    for sentences in sentbatches
-        parsers = map(arctype, sentences)
-        B = length(parsers) # bathcsize
-        mcosts  = Array{Cost}(parsers[1].nmove)
-        parserdone = map(endofparse, parsers)
-        #parserdone = falses(length(parsers))
-        t0 = zeros(Float32, hidact, B, 1)
-        h0 = c0 = (gpu()>=0 ? KnetArray(t0) : Array(t0))
-        y0 = reshape(h0, hidact, B)
-        nstate = (y0, h0, c0);
-        inacts = map(t->1, 1:B)
-        yact, hact, cact = scan_action(allmodel, inacts, nstate)
-
-        while !all(parserdone)
-            yact, hact, cact = scan_action(allmodel, inacts, nstate)
-            nstate = (yact, hact, cact); 
-            ybufs    = scan_bufbatch2(allmodel, parsers, hidbuf)
-            ysts     = scan_stackbatch(allmodel, parsers, hidstack)
-            encoded  = vcat(yact, ybufs, ysts) 
-            scores   = mlp(mlpmodel, encoded, pdrop=pdrop)
-            logprobs = Array(logp(scores, 1))
-
-            inacts = Int[] # to get the next step's actions
-            for (i, p) in enumerate(parsers)
-                if parserdone[i]
-                    if p.sentence.parse == nothing # to avoid from the first time
-                        p.sentence.parse = p
-                    end
-                    push!(inacts, 1) # not to break batchsize
-                    continue
-                end
-                isorted = sortperm(logprobs[:,i], rev=true) # ith col ith inst.
-                for m in isorted # best&val action
-                    if moveok(p, m)
-                        move!(p, m)
-                        push!(inacts, m) # not to break batchsize
-                        break
-                    end
-                end
-                if endofparse(p)
-                    parserdone[i] = true
-                    p.sentence.parse = p
-                end
-            end
-        end
-    end
-    return las(corpus)
-end
-
-################## GARBAGE END ##################
