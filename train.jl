@@ -55,7 +55,7 @@ function main(args=ARGS)
     @msg("Caching lm vectors...")
     map(cachelmvec!,corpora)
 
-    info("Model initialization...")
+    @msg("Model initialization...")
     model, optims = initmodel1(odict, corpora[1][1])
 
     # hyper - parameters
