@@ -63,7 +63,7 @@ function main(args=ARGS)
 
     println("opts=",[(k,v) for (k,v) in odict]...)
 
-    info("calculating initial accuracies")
+    @msg("calculating initial accuracies"); flush(STDOUT)
     acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
     acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], batchsize; pdrop=(0.0, 0.0))
     bestlas = acc2; bestepoch=0;
