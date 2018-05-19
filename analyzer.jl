@@ -16,6 +16,9 @@ function getlas(ARGS)
             end
         end
     end
+    if isempty(trains)
+        println("No enough epoch"); return;
+    end
     trmax, devmax = findmax(trains), findmax(devs)
     println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1])")
 end
