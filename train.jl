@@ -34,7 +34,7 @@ function main(args=ARGS)
 
     # Set-Up
     odict[:arctype] = ArcHybridR1; odict[:posembed]=odict[:embed][1];
-    odict[:sthidden], odict[:bufhidden], odict[:acthidden] = odict[:lstmhiddens][1], odict[:lstmhiddens][2], odict[:lstmhiddens][3]
+    odict[:sthidden], odict[:acthidden], odict[:bufhidden] = odict[:lstmhiddens][1], odict[:lstmhiddens][2], odict[:lstmhiddens][3]
     odict[:stembed]=odict[:bufembed]=langembed+odict[:posembed]
     odict[:optimization] = eval(parse(odict[:optimization]))
     
@@ -98,9 +98,10 @@ function main(args=ARGS)
             if odict[:bestfile] != nothing
                 # TODO: add save method for trained model
             end
-            if 9 < bestepoch < epoch-9
-                break
-            end
+        end
+        if 9 < bestepoch < epoch-14
+            @msg "bestlas $bestlas"
+            break
         end
     end
     @msg :done
