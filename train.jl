@@ -99,8 +99,8 @@ function main(args=ARGS)
                 # TODO: add save method for trained model
             end
         end
-        if 9 < bestepoch < epoch-14
-            @msg "bestlas $bestlas"
+        if 9 < bestepoch < epoch-15
+            @msg "bestlas $bestlas in $bestepoch"
             break
         end
     end
