@@ -307,22 +307,3 @@ function oracletest(allmodel, corpus, arctype, hiddens, batchsize; pdrop=(0.0, 0
     end
     return las(corpus)
 end
-
-
-# labeled-attachment score calculator
-function las(corpus)
-    nword = ncorr = 0
-    for s in corpus
-        p = s.parse
-        nword += length(s)
-        ncorr += sum((s.head .== p.head) .& (s.deprel .== p.deprel))
-    end
-    ncorr / nword
-end
-
-
-function empty_parses!(corpus)
-    for s in corpus
-        s.parse = nothing
-    end
-end

@@ -8,7 +8,7 @@ const Move     =  Int             # [1:nmove]
 const WordId   =  Int32           # [1:nvocab]
 const Pvec     = Vector{Position} # used for stack, head ? don't sure what it is
 const Dvec     = Vector{DepRel}   # used for deprel
-
+const XPosTag  = UInt16           # language specific xpostag
 
 # Universal POS tags (17)
 const UPOSTAG = Dict{String,PosTag}(
@@ -136,7 +136,7 @@ type Sentence2 <: SuperSent     # ONLY XPOSTAG-ADDED
     parse
 
     Sentence2(v::Vocab) = new([], [], [], [], [], [], [], [], [], v, nothing)
-    #                        w   po  xp  he  dep we  fv  bc  ca  v  p
+    #                         w   po  xp  he  dep we  fv  bc  ca  v  p
 
 end
 

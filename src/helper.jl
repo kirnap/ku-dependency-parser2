@@ -31,6 +31,26 @@ function inc(s::StopWatch, n, step=1000)
 end
 
 
+# labeled-attachment score calculator
+function las(corpus)
+    nword = ncorr = 0
+    for s in corpus
+        p = s.parse
+        nword += length(s)
+        ncorr += sum((s.head .== p.head) .& (s.deprel .== p.deprel))
+    end
+    ncorr / nword
+end
+
+
+function empty_parses!(corpus)
+    for s in corpus
+        s.parse = nothing
+    end
+end
+
+
+
 map2cpu(x)=(if isbits(x); x; else; map2cpu2(x); end)
 map2cpu(x::KnetArray)=Array(x)
 map2cpu(x::Tuple)=map(map2cpu,x)
