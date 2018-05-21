@@ -4,7 +4,7 @@ include("src/header.jl")
 # lm-related constants(fixed!)
 const langembed = 950 # 300+300+350(f,b,w)
 const lmdir  = "/scratch/users/okirnap/ud-treebanks-v2.2/chmodel_converted"
-const datadir = "/scratch/users/okirnap/ud-treebanks-v2.2"
+#const datadir = "/scratch/users/okirnap/ud-treebanks-v2.2"
 
 
 function main(args=ARGS)
@@ -26,6 +26,7 @@ function main(args=ARGS)
         ("--optimization";  default="Adam"; help="Optimization algorithm and parameters.")
         ("--savefile"; help="To save the final model file")
         ("--bestfile"; help="To save the best model file")
+        ("--acfile"; nargs='+'; help="Gold .conllu file to calculate acc")
         
     end
     isa(args, AbstractString) && (args=split(args))
@@ -37,17 +38,21 @@ function main(args=ARGS)
     odict[:sthidden], odict[:acthidden], odict[:bufhidden] = odict[:lstmhiddens][1], odict[:lstmhiddens][2], odict[:lstmhiddens][3]
     odict[:stembed]=odict[:bufembed]=langembed+odict[:posembed]
     odict[:optimization] = eval(parse(odict[:optimization]))
-    
+
+    # hyper - parameters
+    pdrop = odict[:dropout]; batchsize = odict[:batchsize];
+
+
     if odict[:lmfile] != nothing
         language_model = joinpath(lmdir, odict[:lmfile])
         @msg language_model
     end
     d = load(language_model); v = create_vocab(d); wmodel = makewmodel(d);
-
+    
     corpora = []
-    for f in odict[:datafiles]; 
-        f1 = joinpath(datadir, f); @msg f1
-        c = load_conllu(f1, v)
+    for f in odict[:datafiles];
+        @msg f
+        c = load_conllu(f, v)
         push!(corpora, c)
     end
     cc=vcat(corpora...);
@@ -58,14 +63,11 @@ function main(args=ARGS)
     @msg("Model initialization...")
     model, optims = initmodel1(odict, corpora[1][1])
 
-    # hyper - parameters
-    pdrop = odict[:dropout]; batchsize = odict[:batchsize]; odict[:pdrop] = pdrop;
-
     println("opts=",[(k,v) for (k,v) in odict]...)
 
     @msg("calculating initial accuracies"); flush(STDOUT)
-    acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
-    acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], batchsize; pdrop=(0.0, 0.0))
+    acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens], odict[:batchsize]; pdrop=(0.0, 0.0))
+    acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], odict[:batchsize]; pdrop=(0.0, 0.0))
     bestlas = acc2; bestepoch=0;
     @msg "Initial tracc $acc1 devacc $acc2"
 
@@ -86,8 +88,8 @@ function main(args=ARGS)
             end
         end
         empty_parses!(corpora[1]); empty_parses!(corpora[2]); #gc(); Knet.gc();gc();
-        acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],batchsize; pdrop=(0.0, 0.0))
-        acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], batchsize; pdrop=(0.0, 0.0))
+        acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],odict[:batchsize]; pdrop=(0.0, 0.0))
+        acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], odict[:batchsize]; pdrop=(0.0, 0.0))
         println()
         @msg "epoch $epoch train acc $acc1 dev acc $acc2"
 
