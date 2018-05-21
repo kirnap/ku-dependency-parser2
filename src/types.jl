@@ -149,7 +149,28 @@ Base.show(io::IO, s::SuperSent) = for w in s.word; print(io, "$w ");end;
 
 function Base.:(==)(a::SuperSent, b::SuperSent)
     for f in fieldnames(a)
-        if getfield(a, f)!= getfield(b, f); return false;end;
+        if getfield(a, f) != getfield(b, f); return false;end;
+    end
+    return true
+end
+
+
+function Base.:(==)(a::Vocab, b::Vocab)
+    for f in fieldnames(a)
+        if getfield(a, f) != getfield(b, f); return false;end;
+    end
+    return true
+end
+
+
+function almostequal(a::SuperSent, b::SuperSent)
+    for f in fieldnames(a)
+        if f == :postag
+            continue
+        elseif getfield(a, f) != getfield(b, f)
+            @show f
+            return false
+        end
     end
     return true
 end
