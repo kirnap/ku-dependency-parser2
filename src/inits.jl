@@ -36,3 +36,13 @@ end
 function initbuf(bufembed, bufhidden; buftype=:lstm, numLayers=1)
     r, wr = rnninit(bufembed, bufhidden, rnnType=buftype, numLayers=numLayers)
 end
+
+# commonly used decision module
+function mlp(w,x; pdrop=(0,0))
+    x = dropout(x,pdrop[1])
+    for i=1:2:length(w)-2
+        x = relu.(w[i]*x .+ w[i+1])
+        x = dropout(x,pdrop[2])
+    end
+    return w[end-1]*x .+ w[end]
+end
