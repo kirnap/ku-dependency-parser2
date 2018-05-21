@@ -39,7 +39,7 @@ function las(corpus)
         nword += length(s)
         ncorr += sum((s.head .== p.head) .& (s.deprel .== p.deprel))
     end
-    ncorr / nword
+    return ncorr / nword
 end
 
 
@@ -49,6 +49,47 @@ function empty_parses!(corpus)
     end
 end
 
+
+# To generat .conllu formatted files
+# To preprocess the files from erenay,
+# Replace the head and deprel fields w/ gold ones
+function writeconllu1(goldfile, outputfile, erenayfile, v)
+    sentences = load_conllu(goldfile, v) # gold-sentences
+    out = open(outputfile, "w")
+    deprels = Array{String}(length(v.deprels))
+    for (k, v) in v.deprels; deprels[v]=k; end;
+    s = ph = pd = nothing
+    ns = nw = nl = 0
+    for line in eachline(erenayfile)
+        nl += 1
+        if ismatch(r"^\d+\t", line)
+            if s == nothing
+                s = sentences[ns+1]
+                ph = s.head
+                pd = s.deprel
+            end
+            f = split(line, '\t')
+            nw += 1
+            if f[1] != "$nw"; error();end;
+            if f[2] != s.word[nw]; error(); end
+            f[7] = string(ph[nw])
+            f[8] = deprels[pd[nw]]
+            print(out, join(f, "\t"))
+            print(out, "\n")
+        else
+            if line == ""
+                if s == nothing; error(); end
+                if nw != length(s.word); error(); end
+                ns += 1; nw = 0
+                s = ph = pd = nothing
+            end
+            print(out, line)
+            print(out, "\n")
+        end
+    end
+    if ns != length(sentences); error("#of sentences different");end;
+    close(out)
+end
 
 
 map2cpu(x)=(if isbits(x); x; else; map2cpu2(x); end)
