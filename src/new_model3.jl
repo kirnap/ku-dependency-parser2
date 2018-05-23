@@ -138,14 +138,22 @@ function scan_stack(model, parser, hstack)
     instate = zeros(Float32, hstack, 1)
     yst = hout = cout = (gpu() >= 0 ? KnetArray(instate) : Array(instate))
     range = 1:seqe # words in stack p.stack[1:p.sptr]
+
+    if length(range) < 1
+        return yst
+    end
+    inputs = Any[]
     for i in range
         indx  = parser.stack[i]
         #word = sentence.word[indx]; print(" $word") # dbg line
         x = (gpu() >= 0 ? KnetArray(sentence.cavec[indx]) : Array(sentence.cavec[indx]))
         input = cat1d(x, pvecs[sentence.postag[indx]])
-        yst, hout, cout, _ = rnnforw(rst, wst, input, hout, cout, hy=true, cy=true)
+        push!(inputs, input)
+        #yst, hout, cout, _ = rnnforw(rst, wst, input, hout, cout, hy=true, cy=true)
     end
-    return yst
+    in2rnn = reshape(hcat(inputs...), 1078, 1, length(inputs))
+    _, hstck, = rnnforw(rst, wst, in2rnn, hy=true)
+    return reshape(hstck, hstack, 1)
 end
 
 
