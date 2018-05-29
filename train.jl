@@ -1,8 +1,9 @@
 using JLD, Knet, ArgParse
 include("src/header.jl")
+include("src/new_model4.jl")
+@msg "src/new_model4.jl"
 
 # lm-related constants(fixed!)
-const langembed = 950 # 300+300+350(f,b,w)
 const lmdir  = "/scratch/users/okirnap/ud-treebanks-v2.2/chmodel_converted"
 #const datadir = "/scratch/users/okirnap/ud-treebanks-v2.2"
 
@@ -26,19 +27,24 @@ function main(args=ARGS)
         ("--optimization";  default="Adam"; help="Optimization algorithm and parameters.")
         ("--savefile"; help="To save the final model file")
         ("--bestfile"; help="To save the best model file")
-        ("--acfile"; nargs='+'; help="Gold .conllu file to calculate acc")
-        
+        ("--wembed"; arg_type=Int; default=12; help="Word Embeddings dimension")
+        ("--deprel"; arg_type=Int; default=128; help="DepRel Embed")
+        ("--treeType"; default=:tanh; help="Tree embedding function")
+
     end
     isa(args, AbstractString) && (args=split(args))
     odict = parse_args(args, s; as_symbols=true)
     println(s.description); flush(STDOUT);
 
-    # Set-Up
+    # Set-Up 
     odict[:arctype] = ArcHybridR1; odict[:posembed]=odict[:embed][1];
     odict[:sthidden], odict[:acthidden], odict[:bufhidden] = odict[:lstmhiddens][1], odict[:lstmhiddens][2], odict[:lstmhiddens][3]
-    odict[:stembed]=odict[:bufembed]=langembed+odict[:posembed]
+    odict[:embdim] = odict[:wembed]+odict[:posembed]
     odict[:optimization] = eval(parse(odict[:optimization]))
 
+
+    # TODO: Change bufembed - lowered the wvec dim
+    odict[:stembed]=odict[:bufembed]=odict[:wembed]+odict[:posembed] 
     # hyper - parameters
     pdrop = odict[:dropout]; batchsize = odict[:batchsize];
 
@@ -66,8 +72,8 @@ function main(args=ARGS)
     println("opts=",[(k,v) for (k,v) in odict]...)
 
     @msg("calculating initial accuracies"); flush(STDOUT)
-    acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens], odict[:batchsize]; pdrop=(0.0, 0.0))
-    acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], odict[:batchsize]; pdrop=(0.0, 0.0))
+    acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens], odict[:batchsize], odict[:embdim]; pdrop=(0.0, 0.0))
+    acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], odict[:batchsize], odict[:embdim]; pdrop=(0.0, 0.0))
     bestlas = acc2; bestepoch=0;
     @msg "Initial tracc $acc1 devacc $acc2"
 
@@ -80,7 +86,7 @@ function main(args=ARGS)
         nwords = StopWatch()
         losses = Any[0,0,0]
         @time for sentences in sentbatches
-            grads = oraclegrad(model, sentences, odict[:arctype], odict[:lstmhiddens], losses=losses, pdrop=pdrop)
+            grads = oraclegrad(model, sentences, odict[:arctype], odict[:lstmhiddens], odict[:embdim],losses=losses, pdrop=pdrop)
             update!(model, grads, optims)
             nw = sum(map(length,sentences))
             if (speed = inc(nwords, nw)) != nothing
@@ -88,8 +94,8 @@ function main(args=ARGS)
             end
         end
         empty_parses!(corpora[1]); empty_parses!(corpora[2]); #gc(); Knet.gc();gc();
-        acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],odict[:batchsize]; pdrop=(0.0, 0.0))
-        acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], odict[:batchsize]; pdrop=(0.0, 0.0))
+        acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens],odict[:batchsize], odict[:embdim]; pdrop=(0.0, 0.0))
+        acc2 = oracletest(model, corpora[2], odict[:arctype], odict[:lstmhiddens], odict[:batchsize], odict[:embdim]; pdrop=(0.0, 0.0))
         println()
         @msg "epoch $epoch train acc $acc1 dev acc $acc2"
 
