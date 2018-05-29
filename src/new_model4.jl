@@ -55,11 +55,11 @@ function initmodel1(o, s; ftype=Float32)
     push!(model, Any[ initr(depreldim, GPUFEATS=true) for i=1:p.nmove-1 ])
     
     # tree representer # 9
-    rt, wrt = rnninit(o[:deprel]+o[:wembed], o[:wembed], rnnType=odict[:treeType])
+    rt, wrt = rnninit(o[:deprel]+o[:wembed], o[:wembed], rnnType=o[:treeType])
     push!(model, [rt, wrt])
 
     optims = optimizers(model, o[:optimization])
-    return model
+    return model, optims
     
 end
 
