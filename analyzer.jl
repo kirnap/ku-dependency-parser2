@@ -1,7 +1,7 @@
 # To analyze the result file
 function getlas(ARGS)
     fname = ARGS[1] # filename
-    trains = Any[]; devs = Any[];
+    trains = Any[]; devs = Any[]; isdone=false;
     for line in eachline(fname)
         if contains(line, "acc")
             toparse = split(line)
@@ -15,11 +15,16 @@ function getlas(ARGS)
                 devacc = parse(toparse[end]); push!(devs, devacc)
             end
         end
+        contains(line, "done") && (isdone=true)
     end
     if isempty(trains)
         println("No enough epoch"); return;
     end
     trmax, devmax = findmax(trains), findmax(devs)
-    println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1])")
+    if isdone
+        println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1]) DONE.")
+    else
+        println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1]) continued...")
+    end
 end
 !isinteractive() && getlas(ARGS)
