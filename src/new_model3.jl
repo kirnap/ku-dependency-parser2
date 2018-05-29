@@ -107,7 +107,7 @@ end
 
 
 function scan_bufbatch(yalls, parsers, hidden)
-    ncols = map(revptr, parsers) # batchsize
+    #ncols = map(revptr, parsers) # batchsize
     B = length(parsers)
     instate = zeros(Float32, hidden, 1) 
     ybuf = (gpu() >=0 ? KnetArray(instate) : Array(instate))
@@ -137,13 +137,13 @@ function scan_stack(model, parser, hstack)
     seqe = parser.sptr
     instate = zeros(Float32, hstack, 1)
     yst = hout = cout = (gpu() >= 0 ? KnetArray(instate) : Array(instate))
-    range = 1:seqe # words in stack p.stack[1:p.sptr]
+    range_ = 1:seqe # words in stack p.stack[1:p.sptr]
 
-    if length(range) < 1
+    if length(range_) < 1
         return yst
     end
     inputs = Any[]
-    for i in range
+    for i in range_
         indx  = parser.stack[i]
         #word = sentence.word[indx]; print(" $word") # dbg line
         x = (gpu() >= 0 ? KnetArray(sentence.cavec[indx]) : Array(sentence.cavec[indx]))
