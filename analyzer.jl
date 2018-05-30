@@ -24,7 +24,7 @@ function getlas(ARGS)
     if isdone
         println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1]) DONE.")
     else
-        println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1]) continued...")
+        println("tr$(trmax[2]) $(trmax[1]) | dev$(devmax[2]) $(devmax[1]) :epoch$(length(trains)+1)")
     end
 end
 !isinteractive() && getlas(ARGS)
