@@ -17,17 +17,17 @@ function main(args=ARGS)
         ("--loadfile"; help="Initialize model from file/ language model or all model")
         ("--datafiles"; nargs='+'; help="Input in conllu format. If provided, use the first for training, last for dev. If single file use both for train and dev.")
         ("--output"; help="Output parse of first datafile in conllu format")
-        ("--lstmhiddens"; nargs='+'; arg_type=Int; default=[128,128,128]; help="lstm dims (stack-1),(buff-2),(act-3)")
+        ("--lstmhiddens"; nargs='+'; arg_type=Int; default=[256,256,256]; help="lstm dims (stack-1),(buff-2),(act-3)")
         ("--actembed"; arg_type=Int; default=32; help="action space embeddings")
         ("--batchsize"; arg_type=Int; default=8; help="Number of sequences to train on in parallel.")
         ("--epochs"; arg_type=Int; default=100; help="Epochs of training.")
-        ("--dropout"; nargs='+'; arg_type=Float64; default=[0.4, 0.5]; help="Dropout probabilities.")
+        ("--dropout"; nargs='+'; arg_type=Float64; default=[0.6, 0.6]; help="Dropout probabilities.")
         ("--embed"; nargs='+'; arg_type=Int; default=[128, 128, 128];help="embedding sizes for postag(17),xpostag(?),feats(?) default 128,?,?.")
         ("--hidden"; nargs='+'; default=[2048]; help="MLP dims for final layer")
         ("--optimization";  default="Adam"; help="Optimization algorithm and parameters.")
         ("--savefile"; help="To save the final model file")
         ("--bestfile"; help="To save the best model file")
-        ("--wembed"; arg_type=Int; default=12; help="Word Embeddings dimension")
+        ("--wembed"; arg_type=Int; default=512; help="Word Embeddings dimension")
         ("--deprel"; arg_type=Int; default=128; help="DepRel Embed")
         ("--treeType"; default=:tanh; help="Tree embedding function")
 
@@ -43,7 +43,6 @@ function main(args=ARGS)
     odict[:optimization] = eval(parse(odict[:optimization]))
 
 
-    # TODO: Change bufembed - lowered the wvec dim
     odict[:stembed]=odict[:bufembed]=odict[:wembed]+odict[:posembed] 
     # hyper - parameters
     pdrop = odict[:dropout]; batchsize = odict[:batchsize];
@@ -77,6 +76,9 @@ function main(args=ARGS)
     bestlas = acc2; bestepoch=0;
     @msg "Initial tracc $acc1 devacc $acc2"
 
+    nsentdev = length(corpora[2]); nworddev = sum(map(length, corpora[2]));
+    @msg "nsentdev/nworddev=$nsentdev/$nworddev"
+    
     sentbatches = minibatch(corpora[1], batchsize, maxlen=64, minlen=2, shuf=true)
     nsent = sum(map(length,sentbatches)); nsent0 = length(corpora[1])
     nword = sum(map(length,vcat(sentbatches...))); nword0 = sum(map(length,corpora[1]))
