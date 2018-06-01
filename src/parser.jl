@@ -35,7 +35,7 @@ type Parser{T,V}
         init!(new(nword,ndeps,0,1,0,Pzeros(nword),Pzeros(nword),Droots(nword)))
     end
 
-    function Parser{T, V}(s::Sentence) where {T, V}
+    function Parser{T, V}(s::SuperSent) where {T, V}
         nword = length(s.word)
         ndeps = length(s.vocab.deprels)
         init!(new(nword,ndeps,0,1,0,Pzeros(nword),Pzeros(nword),Droots(nword),s))
