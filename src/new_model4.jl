@@ -233,7 +233,6 @@ function update_cache!(model, wvecs, cacbufs, p, m)
         bufmodel, pvecs = bufferm(model), postagv(model)
         rbuf, wbuf = bufmodel[1], bufmodel[2]
         ybuf, cbuf = cacbufs
-        in2rnn = cat1d(wnew, pvecs[p.sentence.postag[hw]])
         yold, cold = cacbufs
         hyin, cyin = yold[hw], cold[hw]
 
