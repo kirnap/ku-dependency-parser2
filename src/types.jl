@@ -137,15 +137,36 @@ type Sentence2 <: SuperSent     # ONLY XPOSTAG-ADDED
 
     Sentence2(v::Vocab) = new([], [], [], [], [], [], [], [], [], v, nothing)
     #                         w   po  xp  he  dep we  fv  bc  ca  v  p
-
 end
 
 
+type Sentence3 <: SuperSent     # XPOSTAG-FEATS ADDED
+    word::Vector{Word}          # 2. FORM: Word form or punctuation symbol
+    # stem::Vector{Stem}        # 3. LEMMA: Lemma for m or punctiation symbol
+    postag::Vector{PosTag}      # 4. UPOSTAG: Universal part-of-speech tag
+    xpostag::Vector{XPosTag}    # 5. Language specific pos-tag
+    feats::Vector{Any}          # 6. FEATS: List of morphological features from the universal feature inventory or from a defined language-specific extension; underscore if not available
+    head::Vector{Position}      # 7. HEAD: Head of the current word, which is either a vvalue of ID or zero 
+    deprel::Vector{DepRel}       # 8. DEPREL: Universal dependency relation to the HEAD(root iff HEAD=0) or a defined language-specific subtype
+    # deps::Vector{Deps}        # 9. DEPS: Enhanced dependency graph in the form of a list of head-deprel pairs.
+    # misc::Vector{Misc}        # 10. MISC: Any other annotation.
+
+    # language model dependent features
+    wvec::Vector                # word vectors
+    fvec::Vector                # forw context vectors
+    bvec::Vector                # backw context vectors
+    cavec::Vector               # to cache forw, backw, and word vectors
+    vocab::Vocab                # go to 13
+    parse
+
+    Sentence3(v::Vocab) = new([], [], [], [], [], [], [], [], [], [], v, nothing)
+    #                         w   po  xp  fe  he  dep we  fv  bc  ca  v  p
+end
 
 
 Base.length(s::SuperSent) = length(s.word)
-
 Base.show(io::IO, s::SuperSent) = for w in s.word; print(io, "$w ");end;
+
 
 function Base.:(==)(a::SuperSent, b::SuperSent)
     for f in fieldnames(a)
