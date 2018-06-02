@@ -92,17 +92,6 @@ function writeconllu1(goldfile, outputfile, erenayfile, v)
 end
 
 
-# To save model related
-import JLD: writeas, readas
-import Knet: RNN
-type RNNJLD; inputSize; hiddenSize; numLayers; dropout; inputMode; direction; mode; algo; dataType; end
-writeas(r::RNN) = RNNJLD(r.inputSize, r.hiddenSize, r.numLayers, r.dropout, r.inputMode, r.direction, r.mode, r.algo, r.dataType)
-readas(r::RNNJLD) = rnninit(r.inputSize, r.hiddenSize, numLayers=r.numLayers, dropout=r.dropout, skipInput=(r.inputMode==1), bidirectional=(r.direction==1), rnnType=(:relu,:tanh,:lstm,:gru)[1+r.mode], algo=r.algo, dataType=r.dataType)[1]
-type KnetJLD; a::Array; end
-writeas(c::KnetArray) = KnetJLD(Array(c))
-readas(d::KnetJLD) = (gpu() >= 0 ? KnetArray(d.a) : d.a)
-
-
 # There may be no need for the following methods
 map2cpu(x)=(if isbits(x); x; else; map2cpu2(x); end)
 map2cpu(x::KnetArray)=Array(x)
