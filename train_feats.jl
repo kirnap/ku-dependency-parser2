@@ -5,7 +5,10 @@ include(mfile)
 @msg mfile
 
 # lm-related constants(fixed!)
-const lmdir  = "/scratch/users/okirnap/ud-treebanks-v2.2/chmodel_converted"
+# const lmdir  = "/scratch/users/okirnap/ud-treebanks-v2.2/chmodel_converted"
+
+# To run everything on aws
+const lmdir  = "../ud-treebanks-v2.2/chmodel_converted"
 #const datadir = "/scratch/users/okirnap/ud-treebanks-v2.2"
 
 
@@ -30,7 +33,7 @@ function main(args=ARGS)
         ("--hidden"; nargs='+'; default=[2048]; help="MLP dims for final layer")
         ("--lstmhiddens"; nargs='+'; arg_type=Int; default=[256,256,256]; help="lstm dims (stack-1),(buff-2),(act-3)")
         ("--embed"; nargs='+'; arg_type=Int; default=[128, 128, 128];help="embedding sizes for postag(17),xpostag(?),feats(?) default 128,?,?.")
-        ("--actembed"; arg_type=Int; default=32; help="action space embeddings")
+        ("--actembed"; arg_type=Int; default=64; help="action space embeddings")
         ("--wembed"; arg_type=Int; default=512; help="Word Embeddings dimension")
         ("--fembed"; arg_type=Int; default=128; help="Features Embeddings dimension")
         ("--deprel"; arg_type=Int; default=128; help="DepRel Embed")
