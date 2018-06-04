@@ -17,14 +17,16 @@ function main(args=ARGS)
         ("--lmfile"; help="Language model file to load pretrained language mode")
         ("--loadfile"; help="Initialize model from file/ language model or all model")
         ("--datafiles"; nargs='+'; help="Input in conllu format. If provided, use the first for training, last for dev. If single file use both for train and dev.")
+        ("--bestfile"; help="To save the best model file")
         ("--output"; help="Output parse of first datafile in conllu format")
+
         ("--epochs"; arg_type=Int; default=100; help="Epochs of training.")
         ("--optimization"; default="Adam"; help="Optimization algorithm and parameters.")
         ("--batchsize"; arg_type=Int; default=8; help="Number of sequences to train on in parallel.")
 
         ("--dropout"; nargs='+'; arg_type=Float64; default=[0.6, 0.6]; help="Dropout probabilities.")
         ("--savefile"; help="To save the final model file")
-        ("--bestfile"; help="To save the best model file")
+
         ("--hidden"; nargs='+'; default=[2048]; help="MLP dims for final layer")
         ("--lstmhiddens"; nargs='+'; arg_type=Int; default=[256,256,256]; help="lstm dims (stack-1),(buff-2),(act-3)")
         ("--embed"; nargs='+'; arg_type=Int; default=[128, 128, 128];help="embedding sizes for postag(17),xpostag(?),feats(?) default 128,?,?.")
@@ -118,7 +120,12 @@ function main(args=ARGS)
             bestepoch = epoch
             bestlas = currlas
             if odict[:bestfile] != nothing
-                # TODO: add save method for trained model
+                JLD.save(odict[:bestfile],
+                         "allmodel", model, "optims", optims,
+                         "featdict", featdict, "xposdict", xposdict,
+                         "wordmodel", wmodel, "vocab", v,
+                         "odict", odict
+                         )
             end
         end
         if 9 < bestepoch < epoch-15
