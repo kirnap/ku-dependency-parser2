@@ -98,6 +98,10 @@ function parse_feats!(fdict::Dict{String, Vector{String}}, feats; testmode=false
             push!(falls, fval)
             idx = length(falls)
         end
+        if testmode && idx == 0 # Do not count test features
+            Base.warn_once("Unkown feats in test set")
+            continue
+        end
         push!(res, [fkey, idx])
     end
     return res
