@@ -63,6 +63,7 @@ function main(args=ARGS)
     end
 
     if odict[:loadfile] !=nothing # continue training
+        @msg odict[:loadfile]
         bundle = load(odict[:loadfile])
         model, optims      = bundle["allmodel"], bundle["optims"]
         wmodel, v          = bundle["wordmodel"], bundle["vocab"]
@@ -97,7 +98,8 @@ function main(args=ARGS)
 
     @msg("Model initialization...")
     odict[:featdim] = featdim(featdict)
-    if odict[:loadfile] == nothing
+
+    if odict[:loadfile] == nothing # if provided no need to reinit
         model, optims = initmodel1(odict, corpora[1][1])
     end
     println("opts=",[(k,v) for (k,v) in odict]...)
