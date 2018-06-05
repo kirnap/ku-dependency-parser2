@@ -54,13 +54,24 @@ function main(args=ARGS)
     odict[:stembed]=odict[:bufembed]=odict[:embdim]
     # hyper - parameters
     pdrop = odict[:dropout]; batchsize = odict[:batchsize];
-
-
+    
+    (odict[:lmfile] !=nothing) && (odict[:loadfile] != nothing) && error("Can not provide both files once")
     if odict[:lmfile] != nothing
         language_model = joinpath(lmdir, odict[:lmfile])
         @msg language_model
+        d = load(language_model); v = create_vocab(d); wmodel = makewmodel(d);
     end
-    d = load(language_model); v = create_vocab(d); wmodel = makewmodel(d);
+
+    if odict[:loadfile] !=nothing # continue training
+        bundle = load(odict[:loadfile])
+        model, optims      = bundle["allmodel"], bundle["optims"]
+        wmodel, v          = bundle["wordmodel"], bundle["vocab"]
+        # Do we need featdict, xposdict
+        #featdict, xposdict = bundle["featdict"], bundle["xposdict"]
+        # Todo : effective way of using odict
+    end
+        
+
     
     corpora = []
     if length(odict[:datafiles]) > 1
@@ -79,13 +90,16 @@ function main(args=ARGS)
     end
 
     cc=vcat(corpora...);
+    @msg("context embeddings...")
     fillvecs!(wmodel, cc, v)
     @msg("Caching lm vectors...")
     map(cachelmvec!,corpora)
 
     @msg("Model initialization...")
     odict[:featdim] = featdim(featdict)
-    model, optims = initmodel1(odict, corpora[1][1])
+    if odict[:loadfile] == nothing
+        model, optims = initmodel1(odict, corpora[1][1])
+    end
     println("opts=",[(k,v) for (k,v) in odict]...)
     @msg("calculating initial accuracies"); flush(STDOUT)
     acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens], odict[:batchsize], odict[:embdim]; pdrop=(0.0, 0.0))
