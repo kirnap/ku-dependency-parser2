@@ -279,7 +279,7 @@ function update_cache!(model, wvecs, cacbufs, p, m)
         x1 = cat1d(wvecs[dw], r)
         input = reshape(x1, length(x1), 1)
         H = AutoGrad.getval(length(wold))
-        wnew, = rnnforw(rt, wt, input, reshape(wold, H, 1, 1)
+        wnew, = rnnforw(rt, wt, input, reshape(wold, H, 1, 1))
         wvecs[hw] = wnew
     end
     #return wvecs # no need to return it only updates related .caches
