@@ -1,0 +1,43 @@
+It seems like saving featdict and loading them to use is not working properly.
+That is because (k,v) iteration through the dictionary is not exactly the same for different dictionary pointers.
+To solve this problem:
+1. load the -train.conllu file and .jld file at the same time via
+   ```julia   
+	include("train_feats2.jl")
+	f = "../ud-treebanks-v2.2/UD_Hungarian-Szeged/hu_szeged-ud-train.conllu";
+	bundle = load("models/new1/hu_szeged.jld");
+	model, optims      = bundle["allmodel"], bundle["optims"];
+        wmodel, v          = bundle["wordmodel"], bundle["vocab"];
+        c, xposdict, featdict = load_conllu3(f, v);
+	fnav = createfnav(featdict); # you need to save that dictionary for test-time usage
+
+	JLD.save("models/new1/hu_szeged2.jld",
+		"allmodel", model, "optims", optims,
+		"wordmodel", map2cpu(wmodel), "vocab", v,
+		"fnav", fnav, "xposdict", xposdict,
+		"odict", bundle["odict"], "featdict", bundle["featdict"]
+		)
+	# to check the aggrement
+	c2 = deepcopy(c); c3 = deepcopy(c);
+	c == c2 == c3 # true
+	shift_cfeats2!(c, fnav);
+	shift_cfeats!(c2, featdict); # the old version
+	shift_cfeats!(c3, bundle["featdict"])
+	c == c2 # returns true
+	c == c3 # returns false
+   ```
+
+Scores
+# hungarian
+19:41:19 Initial tracc 0.9572051968660121   devacc 0.7732527588018917
+19:37:16      Test acc 0.9572051968660121 Test acc 0.7732527588018917
+# turkish
+20:19:19 Initial tracc 0.8215429861877003  devacc  0.6180201778044151
+20:26:53      Test acc 0.8215429861877003 Test acc 0.6180201778044151
+Test acc 0.6180201778044151
+# Here is a sample code to fix broken training
+```julia
+	function fixfeats(injld, outjld, dfile)
+ 	    bundle = load(injld)
+	end	 
+```
