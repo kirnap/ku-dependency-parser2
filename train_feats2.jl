@@ -143,7 +143,7 @@ function main(args=ARGS)
                 JLD.save(odict[:bestfile],
                          "allmodel", model, "optims", optims,
                          "featdict", featdict, "xposdict", xposdict,
-                         "wordmodel", wmodel, "vocab", v,
+                         "wordmodel", map2cpu(wmodel), "vocab", v,
                          "odict", odict
                          )
             end
