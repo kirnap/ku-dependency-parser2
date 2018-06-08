@@ -105,12 +105,13 @@ function main(args=ARGS)
 
     odict[:featdim] = featdim(featdict)
 
-    if odict[:loadfile] == nothing # if provided no need to reinit
-        @msg("Model initialization...")
-        model, optims = initmodel1(odict, corpora[1][1])
-    end
-    
     if !testmode
+        
+        if odict[:loadfile] == nothing # if provided no need to reinit
+            @msg("Model initialization...")
+            model, optims = initmodel1(odict, corpora[1][1])
+        end
+
         println("opts=",[(k,v) for (k,v) in odict]...)
         @msg("calculating initial accuracies"); flush(STDOUT)
         acc1 = oracletest(model, corpora[1], odict[:arctype], odict[:lstmhiddens], odict[:batchsize], odict[:embdim]; pdrop=(0.0, 0.0))
@@ -151,10 +152,14 @@ function main(args=ARGS)
             bestlas = currlas
             if odict[:bestfile] != nothing
                 JLD.save(odict[:bestfile],
-                         "allmodel", model, "optims", optims,
-                         "featdict", featdict, "xposdict", xposdict,
-                         "wordmodel", map2cpu(wmodel), "vocab", v,
-                         "odict", odict, fnav, "fnav"
+                         "allmodel", model,
+                         "optims", optims,
+                         "featdict", featdict,
+                         "xposdict", xposdict,
+                         "wordmodel", map2cpu(wmodel),
+                         "vocab", v,
+                         "odict", odict,
+                         "fnav", fnav
                          )
             end
         end
