@@ -148,7 +148,7 @@ function main(args=ARGS)
                          )
             end
         end
-        if 9 < bestepoch < epoch-15
+        if 9 < bestepoch < epoch-10
             @msg "bestlas $bestlas in $bestepoch"
             break
         end
