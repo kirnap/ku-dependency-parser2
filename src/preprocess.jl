@@ -108,16 +108,16 @@ function parse_feats!(fdict::Dict{String, Vector{String}}, feats; testmode=false
 end
 
 
+# first version is buggy - (k, v) in Assoc. is not safe 
 # Shift morphological features to right columns for embedding mtrx implementation
-function shift_cfeats!(corpus, fdict)
-    fnav = Dict{String, Int}() # Shifting values
-    counter = 1;for (k,v) in fdict; fnav[k]=counter; counter+=length(v);end;
+function shift_cfeats2!(corpus, fnav)
     f(x) = (x[2] += fnav[x[1]]-1) # helper to shift features
     for sentence in corpus
         for fgivens in sentence.feats; map(x->f(x), fgivens);end;
         modify_feats!(sentence) # test them
     end
 end
+
 
 
 # Caches all the feats as an int array
@@ -244,3 +244,17 @@ function minibatch(corpus, batchsize; maxlen=typemax(Int), minlen=1, shuf=false)
 end
 
 
+createfnav(fdict)=(fnav = Dict{String, Int}();counter = 1;for (k,v) in fdict; fnav[k]=counter; counter+=length(v);end; fnav)
+
+
+# Dead code
+# # Shift morphological features to right columns for embedding mtrx implementation
+# function shift_cfeats!(corpus, fdict)
+#     fnav = Dict{String, Int}() # Shifting values
+#     counter = 1;for (k,v) in fdict; fnav[k]=counter; counter+=length(v);end;
+#     f(x) = (x[2] += fnav[x[1]]-1) # helper to shift features
+#     for sentence in corpus
+#         for fgivens in sentence.feats; map(x->f(x), fgivens);end;
+#         modify_feats!(sentence) # test them
+#     end
+# end
