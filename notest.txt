@@ -41,3 +41,11 @@ Test acc 0.6180201778044151
  	    bundle = load(injld)
 	end	 
 ```
+
+
+You may need to locate files (model, data, etc) 
+Here is a short command to do that
+# following line finds the 'ko_' in the ../ud-treebanks-v2.2 directory
+find ../ud-treebanks-v2.2 -type f -name 'ko_*.conllu'^C
+# that line checks whether the model starting with 'pt_' exists in models/. or not
+models/ -type f -name 'pt_*.jld'
