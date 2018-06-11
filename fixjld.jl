@@ -8,6 +8,7 @@ include(mfile)
 function fixjld(jldin, jldout, dfile)
     bundle = load(jldin)
     if haskey(bundle, "fnav")
+        println("cp $jldin $jldout | it is fixed")
         return
     end
     
