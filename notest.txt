@@ -49,3 +49,12 @@ Here is a short command to do that
 find ../ud-treebanks-v2.2 -type f -name 'ko_*.conllu'^C
 # that line checks whether the model starting with 'pt_' exists in models/. or not
 models/ -type f -name 'pt_*.jld'
+
+
+We may need to add dropout to the model, here are ways to do that
+1. Add dropout to scan_buffer     lines-> 96,  126
+2. Add dropout to cache_bufbatch  lines-> 134, 140
+3. Add dropout to stack_stack     lines-> 170, 197
+4. Add dropout to scan_stackbatch lines-> 205(triggers 3.)
+5. Add dropout to scan_action     lines-> 223, 227
+6. Add dropout to update_cache!   lines-> 237, 250, 273, 286
