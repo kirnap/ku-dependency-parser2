@@ -92,6 +92,52 @@ function writeconllu1(goldfile, outputfile, erenayfile, v)
 end
 
 
+# That generateds .conllu formatted file.
+# Input: Erenay's conllu formatted file
+# Output: Manipulate head and deprel columns
+function writeconllu(sentences, inputfile, outputfile)
+    v = sentences[1].vocab
+    out = open(outputfile, "w")
+    deprels = Array{String}(length(v.deprels))
+    for (k, v) in v.deprels; deprels[v]=k;end;
+    s = p = nothing
+    ns = nw = nl = 0
+    for line in eachline(inputfile)
+        nl += 1
+        if ismatch(r"^\d+\t", line)
+            if s == nothing
+                s = sentences[ns+1]
+                p = s.parse
+            end
+            f = split(line, '\t')
+            nw += 1
+            if f[1] != "$nw"; error();end;
+            if f[2] != s.word[nw]; error(); end
+            f[7] = string(p.head[nw])
+            f[8] = deprels[p.deprel[nw]]
+            print(out, join(f, "\t"))
+            print(out, "\n")
+        else
+            if line == ""
+                if s== nothing; error("s can't be nothing");end;
+                if nw != length(s.word); error();end;
+                ns += 1; nw =0
+                s = p = nothing
+            end
+            print(out, line)
+            print(out, "\n")
+        end
+    end
+    if ns != length(sentences); error("#of sentences different");end;
+    close(out)
+end
+
+
+
+
+
+
+    
 # There may be no need for the following methods
 map2cpu(x)=(if isbits(x); x; else; map2cpu2(x); end)
 map2cpu(x::KnetArray)=Array(x)
