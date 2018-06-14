@@ -1,6 +1,7 @@
 using JLD, Knet, ArgParse
 include("src/header.jl")
-const mfile = "src/new_model_feat3.jl"
+#const mfile ="src/new_model_feat3.jl"
+const mfile = "src/_model_feat3_1.jl"
 include(mfile)
 @msg mfile
 
@@ -23,10 +24,11 @@ function main(args=ARGS)
         ("--datafiles"; nargs='+'; help="Input in conllu format. If provided, use the first for training, last for dev. If single file use both for train and dev.")
         ("--bestfile"; help="To save the best model file")
         ("--output"; help="Output parse of first datafile in conllu format")
-
+        
         ("--epochs"; arg_type=Int; default=100; help="Epochs of training.")
         ("--optimization"; default="Adam"; help="Optimization algorithm and parameters.")
         ("--batchsize"; arg_type=Int; default=8; help="Number of sequences to train on in parallel.")
+        ("--transfer"; action = :store_true; help="Whether to transfer or not")
 
         ("--dropout"; nargs='+'; arg_type=Float64; default=[0.6, 0.6]; help="Dropout probabilities.")
         ("--savefile"; help="To save the final model file")
@@ -48,6 +50,7 @@ function main(args=ARGS)
     # to use in parsing
     testmode = (odict[:epochs] <= 0)
 
+    odict[:ldrops] = (0.5, 0.5, (0.5, 0.5))
     # Set-Up    
     odict[:arctype] = ArcHybridR1; odict[:posembed]=odict[:embed][1];
     odict[:embdim] = odict[:wembed]+odict[:posembed]+odict[:fembed] # features added
@@ -65,6 +68,7 @@ function main(args=ARGS)
         d = load(language_model); v = create_vocab(d); wmodel = makewmodel(d);
     end
 
+    odict[:transfer] && (odict[:loadfile]==nothing) && error("You have to provide load file for transfer learning")
     if odict[:loadfile] !=nothing # continue training
         @msg "loading model from $(odict[:loadfile])"
         bundle = load(odict[:loadfile])
@@ -76,12 +80,17 @@ function main(args=ARGS)
     
     
     corpora = []
-    if length(odict[:datafiles]) > 1 # train 
+    if length(odict[:datafiles]) > 1 # train
         f = odict[:datafiles][1] # train
-        c, xposdict, featdict = load_conllu3(f, v)
-        
-        fnav = createfnav(featdict)
-        shift_cfeats2!(c, fnav) 
+        if !odict[:transfer] # creat featdict 
+            c, xposdict, featdict = load_conllu3(f, v)
+            fnav = createfnav(featdict)
+            shift_cfeats2!(c, fnav)
+        else # load fnav from previous model file
+            c, _ = load_conllu3(f, v, featdict, xposdict)
+            fnav = bundle["fnav"]
+            shift_cfeats2!(c, fnav)
+        end
         push!(corpora, c)
         
         f = odict[:datafiles][2] # dev
@@ -133,7 +142,7 @@ function main(args=ARGS)
         nwords = StopWatch()
         losses = Any[0,0,0]
         @time for sentences in sentbatches
-            grads = oraclegrad(model, sentences, odict[:arctype], odict[:lstmhiddens], odict[:embdim],losses=losses, pdrop=pdrop)
+            grads = oraclegrad(model, sentences, odict[:arctype], odict[:lstmhiddens], odict[:embdim],losses=losses, pdrop=pdrop, ldrops=odict[:ldrops])
             update!(model, grads, optims)
             nw = sum(map(length,sentences))
             if (speed = inc(nwords, nw)) != nothing
@@ -182,7 +191,7 @@ function main(args=ARGS)
     # parsing
     if odict[:output] != nothing
         @msg :parsing
-    
+        writeconllu(corpora[1], odict[:datafiles][1], odict[:output])
     end
     @msg :done
 end
