@@ -31,7 +31,7 @@ function main(args=ARGS)
         ("--dropout"; nargs='+'; arg_type=Float64; default=[0.6, 0.6]; help="Dropout probabilities.")
         ("--savefile"; help="To save the final model file")
 
-        ("--hidden"; nargs='+'; default=[2048]; help="MLP dims for final layer")
+        ("--hidden"; nargs='+'; arg_type=Int; default=[2048]; help="MLP dims for final layer")
         ("--lstmhiddens"; nargs='+'; arg_type=Int; default=[256,256,256]; help="lstm dims (stack-1),(buff-2),(act-3)")
         ("--embed"; nargs='+'; arg_type=Int; default=[128, 128, 128];help="embedding sizes for postag(17),xpostag(?),feats(?) default 128,?,?.")
         ("--actembed"; arg_type=Int; default=64; help="action space embeddings")
