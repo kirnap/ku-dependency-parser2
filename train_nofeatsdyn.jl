@@ -1,6 +1,6 @@
 using JLD, Knet, ArgParse
 include("src/header.jl")
-const mfile = "src/model_nofeat1.jl" # static-oracle
+const mfile = "src/model_nofeat_dyn.jl" # dynamic-oracle
 include(mfile)
 @msg mfile
 
