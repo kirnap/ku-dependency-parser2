@@ -1,6 +1,5 @@
 using JLD, Knet, ArgParse
 include("src/header.jl")
-#const mfile ="src/new_model_feat3.jl"
 const mfile = "src/_model_feat3_1.jl"
 include(mfile)
 @msg mfile
