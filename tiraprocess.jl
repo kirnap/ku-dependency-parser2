@@ -4,6 +4,7 @@
 # Sample inputdir
 # "/media/training-datasets/universal-dependency-learning/conll18-ud-development-2018-05-06"
 # You may made it up your sample outdir
+const golddir = "media/data/parser" # Put goldmodels there
 function main(inputDir, outputDir)
     metadir = joinpath(inputDir, "metadata.json")
     metadata = JSON.parsefile(metadir)
