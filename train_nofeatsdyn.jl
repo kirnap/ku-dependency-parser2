@@ -39,7 +39,7 @@ function main(args=ARGS)
         ("--wembed"; arg_type=Int; default=512; help="Word Embeddings dimension")
         ("--fembed"; arg_type=Int; default=128; help="Features Embeddings dimension")
         ("--deprel"; arg_type=Int; default=128; help="DepRel Embed")
-        ("--treeType"; default=:tanh; help="Tree embedding function")
+        ("--treeType"; arg_type=Symbol; default=:tanh; help="Tree embedding function")
 
     end
     isa(args, AbstractString) && (args=split(args))
