@@ -74,6 +74,9 @@ function main(args=ARGS)
         model, optims      = bundle["allmodel"], bundle["optims"]
         wmodel, v          = bundle["wordmodel"], bundle["vocab"]
         featdict, xposdict = bundle["featdict"], bundle["xposdict"]
+        if gpu() >= 0 # To convert again in transfer
+            wmodel = map2gpu(wmodel)
+        end 
         # Todo : effective way of using odict
     end
     
