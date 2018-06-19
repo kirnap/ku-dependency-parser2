@@ -27,7 +27,7 @@ function main(inputDir, outputDir)
         elseif string(langcode, ".jld") in PARSERMODELS
             
         else
-            
+            println("I would look $parser")
         end
     end
 end
