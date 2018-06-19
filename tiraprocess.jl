@@ -1,3 +1,4 @@
+using JSON
 # TODO: include the final train script
 # We need to preprocess the tira files, this probably will be the final .julia file
 
@@ -27,6 +28,8 @@ function main(inputDir, outputDir)
         elseif string(langcode, ".jld") in PARSERMODELS
             
         else
+            # TODO : erase those lines
+            parser =  joinpath(PARSERS,  string(fullcode, ".jld"))
             println("I would look $parser")
         end
     end
