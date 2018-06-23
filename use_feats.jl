@@ -1,10 +1,10 @@
 # Metadata containing whether to use the feats or not
 
 const use_feats = Dict{String, Bool}(
-    "ar_padt"      =>true,
+    "ar_padt"      =>false,
     "ru_syntagrus" =>true,
     "cs_pdt"       =>true,
-    "en_ewt"       =>true,  # TODO:move to v3.0
+    "en_ewt"       =>true,
     "tr_imst"      =>false,
     "sv_lines"     =>false,  
     "en_gum"       =>false,
@@ -16,4 +16,24 @@ const use_feats = Dict{String, Bool}(
     "ko_gsd"       =>false,
     "it_isdt"      =>true,
     "pt_bosque"    =>true,
+    "cs_fictree"   =>true,
+    "bg_btb"       =>true,
+    "got_proiel"   =>true,
+    "vi_vtb"       =>false,
+    "da_ddt"       =>false,
+    "bg_btb"       =>true,
+    "eu_bdt"       =>true,
+    "id_gsd"       =>true,
+    "fi_ftb"       =>true,
+    "fa_seraji"    =>true,
+    "fi_tdt"       =>true,
+    "cs_fictree"   =>true,
+    "fro_srcmf"    =>true, # experimenting with non-feats as well.
+    "he_htb"       =>true,
+    "ja_gsd"       =>true,
+    "it_postwita"  =>true,
+    "el_gdt"       =>false,
+    "nl_alpino"    =>true,
+    "fr_sequoia"   =>false,
+    "en_lines"     =>true,
 )
