@@ -14,5 +14,5 @@ include("inits.jl")
 #include("new_model3.jl") # include model file in main train-file
 
 
-const MAXSENT=64       # skip longer sentences during training
-const MINSENT=2        # skip shorter sentences during training
+const MAXSENT=64;       # skip longer sentences during training
+const MINSENT=2;        # skip shorter sentences during training

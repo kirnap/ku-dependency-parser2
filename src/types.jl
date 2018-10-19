@@ -73,7 +73,7 @@ const UDEPREL = Dict{String,DepRel}(
 )
 
 
-immutable Vocab
+struct Vocab
     cdict::Dict{Char, Int}         # character vocabulary
     idict::Dict{String, Int}       # word dictionary (input) obtained from conll file
     odict::Dict{String, Int}       # word dictionary (output) obtained from lm training
@@ -92,7 +92,7 @@ abstract type SuperSent; end;
     
 
                                 # CONLLU FORMAT
-type Sentence <: SuperSent      # 1. ID: Word index, integer starting at 1 for each new sentence
+struct Sentence <: SuperSent      # 1. ID: Word index, integer starting at 1 for each new sentence
     word::Vector{Word}          # 2. FORM: Word form or punctuation symbol
     # stem::Vector{Stem}        # 3. LEMMA: Lemma for m or punctiation symbol
     postag::Vector{PosTag}      # 4. UPOSTAG: Universal part-of-speech tag
@@ -116,7 +116,7 @@ type Sentence <: SuperSent      # 1. ID: Word index, integer starting at 1 for e
 end
 
 
-type Sentence2 <: SuperSent     # ONLY XPOSTAG-ADDED
+struct Sentence2 <: SuperSent     # ONLY XPOSTAG-ADDED
     word::Vector{Word}          # 2. FORM: Word form or punctuation symbol
     # stem::Vector{Stem}        # 3. LEMMA: Lemma for m or punctiation symbol
     postag::Vector{PosTag}      # 4. UPOSTAG: Universal part-of-speech tag
@@ -140,7 +140,7 @@ type Sentence2 <: SuperSent     # ONLY XPOSTAG-ADDED
 end
 
 
-type Sentence3 <: SuperSent     # XPOSTAG-FEATS ADDED
+struct Sentence3 <: SuperSent     # XPOSTAG-FEATS ADDED
     word::Vector{Word}          # 2. FORM: Word form or punctuation symbol
     # stem::Vector{Stem}        # 3. LEMMA: Lemma for m or punctiation symbol
     postag::Vector{PosTag}      # 4. UPOSTAG: Universal part-of-speech tag

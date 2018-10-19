@@ -20,7 +20,7 @@
 
 import Base: reduce
 
-type Parser{T,V}
+struct Parser{T,V}
     nword::Int            # number of words in sentence
     ndeps::Int            # number of dependency labels (ROOT=1)
     nmove::Int            # number of possible moves (set by init!)
@@ -420,7 +420,9 @@ function Base.copy!(dst::Parser, src::Parser)
     dst
 end # copy!
 
-Base.copy{T<:Parser}(src::T)=copy!(T(src.nword, src.ndeps), src)
+#Base.copy{T<:Parser}(src::T)=copy!(T(src.nword, src.ndeps), src) -> change to next line
+Base.copy(src::T) where T<:Parser = copy!(T(src.nword, src.ndeps), src)
+
 
 function reset!(p::Parser)
     p.wptr = 1
@@ -431,7 +433,8 @@ function reset!(p::Parser)
     init!(p)
 end
 
-reset!{T<:Parser}(pa::Vector{T})=(for p in pa; reset!(p); end)
+#reset!{T<:Parser}(pa::Vector{T})=(for p in pa; reset!(p); end) -> change to the next line
+reset!(pa::Vector{T}) where T<:Parser = (for p in pa; reset!(p); end)
 
 Base.show(io::IO, p::Parser)=print(io, map(Int,p.stack[1:p.sptr]), Int[p.wptr], map(Int,p.head))
 

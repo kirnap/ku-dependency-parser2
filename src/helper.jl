@@ -8,7 +8,7 @@ end
 date(x)=(join(STDOUT,[Dates.format(now(),"HH:MM:SS"), x,'\n'],' '); flush(STDOUT))
 
 
-type StopWatch
+mutable struct StopWatch
     tstart # start time
     nstart # start token
     ncurr  # current token
@@ -132,12 +132,6 @@ function writeconllu(sentences, inputfile, outputfile)
     close(out)
 end
 
-
-
-
-
-
-    
 # There may be no need for the following methods
 map2cpu(x)=(if isbits(x); x; else; map2cpu2(x); end)
 map2cpu(x::KnetArray)=Array(x)
@@ -145,8 +139,9 @@ map2cpu(x::Tuple)=map(map2cpu,x)
 map2cpu(x::AbstractString)=x
 map2cpu(x::DataType)=x
 map2cpu(x::Array)=map(map2cpu,x)
-map2cpu{T<:Number}(x::Array{T})=x
-map2cpu(x::Associative)=(y=Dict();for (k,v) in x; y[k] = map2cpu(x[k]); end; y)
+# map2cpu{T<:Number}(x::Array{T})=x -> change to following
+map2cpu(x::Array{T}) where T<:Number=x
+map2cpu(x::AbstractDict)=(y=Dict();for (k,v) in x; y[k] = map2cpu(x[k]); end; y)
 map2cpu2(x)=(y=deepcopy(x); for f in fieldnames(x); setfield!(y,f,map2cpu(getfield(x,f))); end; y)
 
 map2gpu(x)=(if isbits(x); x; else; map2gpu2(x); end)
@@ -155,6 +150,9 @@ map2gpu(x::AbstractString)=x
 map2gpu(x::DataType)=x
 map2gpu(x::Tuple)=map(map2gpu,x)
 map2gpu(x::Array)=map(map2gpu,x)
-map2gpu{T<:AbstractFloat}(x::Array{T})=KnetArray(x)
-map2gpu(x::Associative)=(y=Dict();for (k,v) in x; y[k] = map2gpu(x[k]); end; y)
+#map2gpu{T<:AbstractFloat}(x::Array{T})=KnetArray(x)
+map2gpu(x::Array{T}) where T<:AbstractFloat = KnetArray(x)
+#map2gpu(x::Associative)=(y=Dict();for (k,v) in x; y[k] = map2gpu(x[k]); end; y)
+map2gpu(x::AbstractDict)=(y=Dict();for (k,v) in x; y[k] = map2gpu(x[k]); end; y)
+
 map2gpu2(x)=(y=deepcopy(x); for f in fieldnames(x); setfield!(y,f,map2gpu(getfield(x,f))); end; y)
