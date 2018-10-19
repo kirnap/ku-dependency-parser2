@@ -28,22 +28,29 @@ cat use_feats.jl
 ```
 For example if we want to *train* en_lines here are the steps for that: 
 
- - 1. ```cat use_feats.jl | grep en_lines``` which gives true, therefore we need to train with
+ - 1. ```cat use_feats.jl | grep en_lines``` which gives true, therefore we need to train with the following command:
 
- - 2. ```julia train_feats3.jl --lmfile your/path/to/english_chmodel.jld --datafiles /your-path-to/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-train.conllu  /your/path/to/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-dev.conllu --bestfile your_model_file.jld```
- - 3. Suppose we want to train hu_szeged which is not using morphological features, thus we need tthe followin command
- - 4.```julia train_nofeats.jl --lmfile your/path/to/hu_szeged.jld --datafiles /your-path-to/hu_szeged.train.conllu  /your-path-to/hu_szeged.dev.conllu --bestfile your_model_file.jld```
+ ```sh
+ julia train_feats3.jl --lmfile your/path/to/english_chmodel.jld --datafiles /your-path-to/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-train.conllu  /your/path/to/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-dev.conllu --bestfile your_model_file.jld
+ ```
+ 
+ - 3. Suppose we want to train hu_szeged which is not using morphological features, thus we need the following command:
+ 
+ ```sh
+ julia train_nofeats.jl --lmfile your/path/to/hu_szeged.jld --datafiles /your-path-to/hu_szeged.train.conllu  /your-path-to/hu_szeged.dev.conllu --bestfile your_model_file.jld
+ ```
 
 ##### Testing
 Let's dive into the testing case
 Suppose we want to test the performance of our en_lines model that we trained in the previous section
+
 ```sh
-	julia train_feats3.jl --datafiles your-path-to/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-dev.conllu --loadfile your-path-to/en_lines.jld --epochs 0 --output your_testfile.conllu
+julia train_feats3.jl --datafiles your-path-to/ud-treebanks-v2.2/UD_English-LinES/en_lines-ud-dev.conllu --loadfile your-path-to/en_lines.jld --epochs 0 --output your_testfile.conllu
 ```
 
 Similarly if you want to test a model trained without morphological features (e.g. hu_szeged)
 ```sh
-	julia train_nofeats.jl --datafiles your-path-to/ud-treebanks-v2.2/UD_Hungarian/hu_szeged.conllu --loadfile your-path-to/hu_szeged.jld --epochs 0 --output your_testfile.conllu
+julia train_nofeats.jl --datafiles your-path-to/ud-treebanks-v2.2/UD_Hungarian/hu_szeged.conllu --loadfile your-path-to/hu_szeged.jld --epochs 0 --output your_testfile.conllu
 ```
 Please not that these commands creates .conllu formatted files with predicted 'head' and deprel columns
 
@@ -52,9 +59,9 @@ Please not that these commands creates .conllu formatted files with predicted 'h
 
 In order to understand the code structure here is a brief explanation of some model files under ```src/``` directory:
 
-1. src/_model_feat3_1.jl : contains the most current version of our model using morphological features as well.
-2. src/model_nofeat1.jl : contains the most current version of our model not using morphological features 
-3. src/model_nofeat_dyn.jl : contains the model which not uses morphological features and trained with dynamic oracle training that we explained in our paper
+1. ```src/_model_feat3_1.jl``` : contains the most current version of our model using morphological features as well.
+2. ```src/model_nofeat1.jl```  : contains the most current version of our model not using morphological features 
+3. ```src/model_nofeat_dyn.jl``` : contains the model which not uses morphological features and trained with dynamic oracle training that we explained in our paper
 
 To better understand the code start from ```src/header.jl``` file, please note that you have to provide .conllu formatted file to our system.
 
