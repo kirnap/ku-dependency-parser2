@@ -65,6 +65,10 @@ In order to understand the code structure here is a brief explanation of some mo
 
 To better understand the code start from ```src/header.jl``` file, please note that you have to provide .conllu formatted file to our system.
 
+### Pre-trained models
+You may download the parser models from [here](http://ai.ku.edu.tr/models/conll18/parser)
+
+You may download the language models from [here](http://ai.ku.edu.tr/models/conll18/lm)
 
 ## Additional help
 For more help, you are welcome to [open an issue](https://github.com/kirnap/ku-dependency-parser/issues/new), or directly contact [okirnap@ku.edu.tr](mailto:okirnap@ku.edu.tr).
