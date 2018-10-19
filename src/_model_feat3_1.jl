@@ -95,7 +95,7 @@ end
 # y2use -> youts[p.wptr]
 function scan_buffer(model, wvecs, parser, hidden; pdrop=0.0) #dropout
     t0 = zeros(Float32, hidden, 1) # takes single instance
-    t0 = (gpu()>=0 ? KnetArray(t0): Array(t0))
+    t0 = (gpu()>=0 ? KnetArray(t0) : Array(t0))
     if length(parser.sentence) == 1 # ugly test time!
         y0 = t0;
         c0 = reshape(t0, length(t0), 1, 1)
