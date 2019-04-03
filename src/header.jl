@@ -1,4 +1,5 @@
-using JLD, Knet
+#using JLD, Knet
+using Knet
 using AutoGrad: cat1d
 include("types.jl")
 include("lm_utils.jl")
