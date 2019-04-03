@@ -70,5 +70,27 @@ You may download the parser models from [here](http://ai.ku.edu.tr/models/conll1
 
 You may download the language models from [here](http://ai.ku.edu.tr/models/conll18/lm)
 
+#### Loading Language Models on julia 1.0.3 
+You need 2 steps arrangements:
+1. on julia 0.6 
+```julia
+   using JLD, Knet;include("src/header.jl")
+   language_model = "/kuacc/users/okirnap/ud-treebanks-v2.2/chmodel_converted/english_chmodel.jld"
+   d = load(language_model);
+   word_vocab2 = Dict{String, Int64}();
+   for (k,v) in d["word_vocab"]; word_vocab2[k]=v;end;
+   new_d = Dict{String, Any}();for (k,v) in d; (k =="word_vocab") ? new_d[k]=word_vocab2 : new_d[k] =v;end;
+   using JLD2
+   JLD2.@save "english_chmodel.jld2" new_d  ```
+
+2.  on julia 1.0, please make sure that you are on branch julia1
+```julia
+	using JLD2,Knet;include("src/header.jl")
+	JLD2.@load "english_chmodel.jld2" new_d; # now you have it!
+```
+
+
 ## Additional help
 For more help, you are welcome to [open an issue](https://github.com/kirnap/ku-dependency-parser/issues/new), or directly contact [okirnap@ku.edu.tr](mailto:okirnap@ku.edu.tr).
+
+
