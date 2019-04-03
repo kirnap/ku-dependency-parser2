@@ -85,8 +85,8 @@ You need 2 steps arrangements:
 ```
 2.  on julia 1.0, please make sure that you are on branch julia1
 ```julia
-	using JLD2,Knet;include("src/header.jl")
-	JLD2.@load "english_chmodel.jld2" new_d; # now you have it!
+   using JLD2,Knet;include("src/header.jl")
+   JLD2.@load "english_chmodel.jld2" new_d; # now you have it!
 ```
 
 
