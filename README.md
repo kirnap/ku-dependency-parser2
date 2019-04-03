@@ -81,8 +81,8 @@ You need 2 steps arrangements:
    for (k,v) in d["word_vocab"]; word_vocab2[k]=v;end;
    new_d = Dict{String, Any}();for (k,v) in d; (k =="word_vocab") ? new_d[k]=word_vocab2 : new_d[k] =v;end;
    using JLD2
-   JLD2.@save "english_chmodel.jld2" new_d  ```
-
+   JLD2.@save "english_chmodel.jld2" new_d
+```
 2.  on julia 1.0, please make sure that you are on branch julia1
 ```julia
 	using JLD2,Knet;include("src/header.jl")
