@@ -70,6 +70,8 @@ You may download the parser models from [here](http://ai.ku.edu.tr/models/conll1
 
 You may download the language models from [here](http://ai.ku.edu.tr/models/conll18/lm)
 
+You may find converted version of langauge models from [here](http://ai.ku.edu.tr/models/conll18/lm/julia1/) (If you couldn't find your model, please refer the next section on this document)
+
 #### Loading Language Models on julia 1.0.3 
 You need 2 steps arrangements:
 1. on julia 0.6 
