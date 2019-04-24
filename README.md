@@ -81,14 +81,19 @@ You need 2 steps arrangements:
    d = load(language_model);
    word_vocab2 = Dict{String, Int64}();
    for (k,v) in d["word_vocab"]; word_vocab2[k]=v;end;
-   new_d = Dict{String, Any}();for (k,v) in d; (k =="word_vocab") ? new_d[k]=word_vocab2 : new_d[k] =v;end;
+   # we have a character conversion inconvenience :( , to fix it store those .txt file and reload it from julia 1
+   open("english_chars.txt", "w") do f; for (k,v) in d["char_vocab"]; k1=string(k); write(f, "$k1,$v\n");end;end;
+   new_d2 = Dict{String, Any}();for (k,v) in d; (k =="word_vocab") ? new_d2[k]=word_vocab2 : new_d2[k] =v;end;
+
    using JLD2
-   JLD2.@save "english_chmodel.jld2" new_d
+   JLD2.@save "english_chmodel.jld2" new_d2
 ```
 2.  on julia 1.0, please make sure that you are on branch julia1
 ```julia
    using JLD2,Knet;include("src/header.jl")
-   JLD2.@load "english_chmodel.jld2" new_d; # now you have it!
+   JLD2.@load "english_chmodel.jld2" new_d2; # now you have it!
+   char_vocab = Dict{Char, Int}() # use this char_vocab instead of the one coming from new_d2
+   for line in eachline("english_chars.txt"); s1, s2 = split(line, ","); isempty(s1) && continue; char_vocab[s1[1]] = parse(Int, s2);end;
 ```
 
 
